@@ -128,13 +128,18 @@ button:disabled {
   line-height: 1.45;
 }
 
-.warning-note {
+.warning-note,
+.material-note {
   margin: 0;
   border-top: 1px solid #dce2e8;
   padding-top: 16px;
   color: #8a3d00;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.material-note {
+  color: #52616f;
 }
 
 .viewer-panel {
