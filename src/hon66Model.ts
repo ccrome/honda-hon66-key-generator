@@ -10,18 +10,17 @@ export type HandleType = "keyless" | "octagonal";
 export interface Hon66Params {
   cutA: Bitting;
   cutB: Bitting;
-  keyWidth: number;
   handleType: HandleType;
 }
 
 export const defaultParams: Hon66Params = {
   cutA: [2, 3, 4, 5, 6, 1],
   cutB: [6, 5, 4, 3, 2, 1],
-  keyWidth: 3,
   handleType: "octagonal",
 };
 
 const inch = 25.4;
+const keyThickness = 3;
 
 const keyLength = 1.834 * inch;
 const keyHeight = 9;
@@ -201,11 +200,11 @@ function extrudePolygon(points: Point2[], height: number, plane: "XY" | "YZ" = "
   return polygonSketch(points, plane).extrude(height) as Shape3D;
 }
 
-function keylessBow(keyWidth: number): Shape3D {
+function keylessBow(): Shape3D {
   const top = keyHeight / 2;
   const bottom = top - keylessBowHeight;
   const left = -keylessBowWidth;
-  const extrusionHeight = Math.min(keylessBowThickness, keyWidth);
+  const extrusionHeight = Math.min(keylessBowThickness, keyThickness);
   const holeRadius = 2.1 / 2;
   const holeCenterX = -(4.78 - holeRadius);
   const holeCenterY = bottom + (2.42 + holeRadius);
@@ -220,19 +219,19 @@ function keylessBow(keyWidth: number): Shape3D {
       [left + keylessBowBottomChamfer, bottom],
     ],
     extrusionHeight,
-  ).translateZ(-keyWidth / 2);
+  ).translateZ(-keyThickness / 2);
 
   const hole = makeCylinder(
     holeRadius,
     extrusionHeight + 0.2,
-    [holeCenterX, holeCenterY, -keyWidth / 2 - 0.1],
+    [holeCenterX, holeCenterY, -keyThickness / 2 - 0.1],
     [0, 0, 1],
   );
 
   return bow.cut(hole);
 }
 
-function octagonalBow(keyWidth: number): Shape3D {
+function octagonalBow(): Shape3D {
   const halfHeight = bowHeight / 2;
   const bow = extrudePolygon(
     [
@@ -245,57 +244,57 @@ function octagonalBow(keyWidth: number): Shape3D {
       [-bowWidth, halfHeight - bowCorner],
       [-bowWidth, -halfHeight + bowCorner],
     ],
-    keyWidth,
-  ).translateZ(-keyWidth / 2);
+    keyThickness,
+  ).translateZ(-keyThickness / 2);
 
   const cutterOverlap = 0.1;
   const hole = makeCylinder(
     bowHoleRadius,
-    keyWidth + 2 * cutterOverlap,
-    [-bowWidth / 2, 0, -keyWidth / 2 - cutterOverlap],
+    keyThickness + 2 * cutterOverlap,
+    [-bowWidth / 2, 0, -keyThickness / 2 - cutterOverlap],
     [0, 0, 1],
   );
 
   return bow.cut(hole);
 }
 
-function handleExtension(type: HandleType, keyWidth: number): Shape3D {
+function handleExtension(type: HandleType): Shape3D {
   return type === "octagonal"
-    ? octagonalBow(keyWidth)
-    : keylessBow(keyWidth);
+    ? octagonalBow()
+    : keylessBow();
 }
 
-function keyBlankHalf(cutA: Bitting, cutB: Bitting, keyWidth: number): Shape3D {
+function keyBlankHalf(cutA: Bitting, cutB: Bitting): Shape3D {
   const outline = extrudePolygon(keyOutlinePoints(), webThickness);
-  const profile = extrudePolygon(keyProfilePoints(cutA, cutB), keyWidth / 2 - webThickness)
+  const profile = extrudePolygon(keyProfilePoints(cutA, cutB), keyThickness / 2 - webThickness)
     .translateZ(webThickness);
 
   return outline.fuse(profile);
 }
 
-function keyBlank(cutA: Bitting, cutB: Bitting, keyWidth: number): Shape3D {
-  const half = keyBlankHalf(cutA, cutB, keyWidth);
+function keyBlank(cutA: Bitting, cutB: Bitting): Shape3D {
+  const half = keyBlankHalf(cutA, cutB);
   return half.fuse(half.clone().rotate(180, [0, 0, 0], [1, 0, 0]));
 }
 
-function positiveYzChamferCutter(keyWidth: number): Shape3D {
+function positiveYzChamferCutter(): Shape3D {
   const xMargin = 1;
   const cutterOverlap = 0.1;
   const yOuter = keyHeight / 2;
-  const zOuter = keyWidth / 2;
+  const zOuter = keyThickness / 2;
 
   return extrudePolygon(
     [
       [yOuter + cutterOverlap, zOuter + cutterOverlap],
       [yOuter - longEdgeChamfer, zOuter + cutterOverlap],
-      [yOuter + cutterOverlap, zOuter - longEdgeChamfer],
+    [yOuter + cutterOverlap, zOuter - longEdgeChamfer],
     ],
     keyLength + 2 * xMargin,
     "YZ",
   ).translateX(-xMargin);
 }
 
-function bottomProfileNotchCutter(keyWidth: number): Shape3D {
+function bottomProfileNotchCutter(): Shape3D {
   const cutterOverlap = 0.1;
   const xStart = 0;
   const yStart = -keyHeight / 2;
@@ -312,19 +311,19 @@ function bottomProfileNotchCutter(keyWidth: number): Shape3D {
       [xSquareEdge, yExit],
       [xStart, yExit],
     ],
-    keyWidth + 2 * cutterOverlap,
-  ).translateZ(-keyWidth / 2 - cutterOverlap);
+    keyThickness + 2 * cutterOverlap,
+  ).translateZ(-keyThickness / 2 - cutterOverlap);
 }
 
 export function buildHon66Key(params: Hon66Params): Shape3D {
-  const base = keyBlank(params.cutA, params.cutB, params.keyWidth)
-    .fuse(handleExtension(params.handleType, params.keyWidth));
+  const base = keyBlank(params.cutA, params.cutB)
+    .fuse(handleExtension(params.handleType));
 
   if (params.handleType !== "keyless") {
     return base;
   }
 
   return base
-    .cut(positiveYzChamferCutter(params.keyWidth))
-    .cut(bottomProfileNotchCutter(params.keyWidth));
+    .cut(positiveYzChamferCutter())
+    .cut(bottomProfileNotchCutter());
 }
