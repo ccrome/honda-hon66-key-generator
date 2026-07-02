@@ -30,9 +30,9 @@ const tipProfileHalfHeight = (0.0315 * inch) / 2;
 const longEdgeChamfer = 1.0;
 const keylessBowWidth = 7.5;
 const keylessBowHeight = 10;
-const keylessBowThickness = 2.6;
+const keylessBowThickness = 2.4;
 const keylessBowBottomChamfer = 2.5;
-const keylessBowTopChamfer = 3.3;
+const keylessBowTopChamfer = 4.3;
 const bowWidth = 18;
 const bowHeight = 18;
 const bowCorner = 4;
@@ -208,7 +208,7 @@ function keylessBow(): Shape3D {
   const extrusionHeight = Math.min(keylessBowThickness, keyThickness);
   const holeRadius = 2.1 / 2;
   const holeCenterX = -(4.78 - holeRadius);
-  const holeCenterY = bottom + (2.42 + holeRadius);
+  const holeCenterY = bottom + (2.92 + holeRadius);
 
   const bow = extrudePolygon(
     [

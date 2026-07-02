@@ -1,8 +1,10 @@
 # HON66 Key Generator
 
+![HON66 generator preview](images/smash-it.png)
+
 Browser-based HON66 key geometry generator with live 3D preview and STEP/STL export.
 
-App: [GitHub Pages](https://ccrome.github.io/honda-hon66-key-generator/)
+Make Your Key Now!: [GitHub Pages](https://ccrome.github.io/honda-hon66-key-generator/)
 
 Repository: [origin](https://github.com/ccrome/honda-hon66-key-generator)
 
