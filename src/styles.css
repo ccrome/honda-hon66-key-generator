@@ -92,6 +92,16 @@ select {
   padding: 0 10px;
 }
 
+input.is-invalid {
+  border-color: #c44c35;
+  background: #fff7f5;
+}
+
+input.is-invalid:focus {
+  outline: 2px solid rgba(196, 76, 53, 0.18);
+  outline-offset: 1px;
+}
+
 button {
   height: 38px;
   border: 1px solid #1f6f8b;
