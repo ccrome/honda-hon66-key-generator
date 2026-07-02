@@ -29,8 +29,8 @@ app.innerHTML = `
   <div class="app-shell">
     <aside class="controls">
       <header>
-        <p class="eyebrow">HON66</p>
-        <h1>Key generator</h1>
+        <h1>Honda HON66 Key Generator</h1>
+        <a class="repo-link" href="https://github.com/ccrome/honda-hon66-key-generator" target="_blank" rel="noreferrer">GitHub repository</a>
       </header>
 
       <form id="params-form" class="form" novalidate>
