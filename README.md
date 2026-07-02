@@ -30,6 +30,18 @@ The app runs entirely in your browser. No key data is stored locally or sent to 
 
 This generator produces a model, not a guaranteed working key. A finished part can break in use, including in an ignition cylinder, which can leave debris behind and lead to expensive removal or repair work. Do not use the output on an ignition or any other critical lock unless you have verified fit, strength, and a safe way to remove a failed part.
 
+## Filament Guidance
+
+For non-critical test fitting, stronger engineering filaments are the least bad 3D-printing options:
+
+- Recommended: ASA, nylon/PA, PA-CF, or polycarbonate from a well-tuned printer.
+- Might be okay: PETG, especially for light fit checks.
+- Definitely not recommended for functional keys: standard PLA, resin/SLA prints, flexible TPU/TPE, silk PLA, wood-filled, metal-filled, glow-in-the-dark, marble, and other brittle or decorative filaments.
+
+PLA is only reasonable for fit checks. It is a poor choice for temperature-sensitive use.
+
+This does not make a printed key safe for ignition use. For anything load-bearing or critical, use a properly cut metal key blank.
+
 ## Local Development
 
 Requirements:
