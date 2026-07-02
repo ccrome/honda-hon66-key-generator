@@ -1,0 +1,181 @@
+:root {
+  color: #1c242c;
+  background: #eef2f5;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  min-height: 100%;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-right: 1px solid #d1d8df;
+  background: #fbfcfd;
+  padding: 24px;
+}
+
+header {
+  margin-bottom: 6px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #52616f;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  color: #3c4854;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+input,
+select {
+  width: 100%;
+  height: 38px;
+  border: 1px solid #c6d0d9;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #17212b;
+  padding: 0 10px;
+}
+
+button {
+  height: 38px;
+  border: 1px solid #1f6f8b;
+  border-radius: 6px;
+  background: #257f9f;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: #1f6f8b;
+}
+
+button:disabled {
+  border-color: #b8c1ca;
+  background: #c9d1d8;
+  color: #697681;
+  cursor: not-allowed;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.readout {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  border-top: 1px solid #dce2e8;
+  padding-top: 18px;
+}
+
+.readout div {
+  display: grid;
+  gap: 3px;
+}
+
+dt {
+  color: #697681;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+dd {
+  margin: 0;
+  color: #25313c;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.privacy-note {
+  margin: 0;
+  border-top: 1px solid #dce2e8;
+  padding-top: 16px;
+  color: #52616f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.viewer-panel {
+  min-width: 0;
+  min-height: 100vh;
+  background: #eef2f5;
+}
+
+.viewer {
+  width: 100%;
+  height: 100%;
+}
+
+canvas {
+  display: block;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    border-right: 0;
+    border-bottom: 1px solid #d1d8df;
+  }
+
+  .viewer-panel {
+    min-height: 60vh;
+  }
+}

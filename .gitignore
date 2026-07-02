@@ -1,0 +1,9 @@
+dist/
+node_modules/
+nohup.out
+.env
+.env.*
+*.pem
+*.p12
+*.pfx
+*.key
