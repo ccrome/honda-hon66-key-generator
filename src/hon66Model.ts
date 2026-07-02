@@ -29,8 +29,11 @@ const tipChamfer = 0.106 * inch;
 const webThickness = 0.015 * inch;
 const tipProfileHalfHeight = (0.0315 * inch) / 2;
 const longEdgeChamfer = 1.0;
-const leftProfileWidth = 7;
-const leftProfileHeight = 10;
+const keylessBowWidth = 7.5;
+const keylessBowHeight = 10;
+const keylessBowThickness = 2.6;
+const keylessBowBottomChamfer = 2.5;
+const keylessBowTopChamfer = 3.3;
 const bowWidth = 18;
 const bowHeight = 18;
 const bowCorner = 4;
@@ -40,7 +43,8 @@ const bottomNotchRightFromTip = 41.2;
 
 const cutSpacing = 0.120 * inch;
 const firstCutFromRight = 0.746 * inch;
-const cut1Depth = 0.042 * inch;
+const cut1WebDistance = 6.9;
+const cut1Depth = (keyHeight - cut1WebDistance) / 2;
 const cutStep = 0.014 * inch;
 const cutLand = 1;
 const leadInLand = 4;
@@ -58,6 +62,10 @@ export function parseBitting(value: string): Bitting {
 
 export function formatBitting(cuts: Bitting): string {
   return cuts.join("");
+}
+
+export function depthOneWebDistance() {
+  return topCutY(1) - bottomCutY(1);
 }
 
 function cutX(index: number) {
@@ -193,18 +201,35 @@ function extrudePolygon(points: Point2[], height: number, plane: "XY" | "YZ" = "
   return polygonSketch(points, plane).extrude(height) as Shape3D;
 }
 
-function leftProfileExtension(keyWidth: number): Shape3D {
+function keylessBow(keyWidth: number): Shape3D {
   const top = keyHeight / 2;
-  const bottom = top - leftProfileHeight;
-  return extrudePolygon(
+  const bottom = top - keylessBowHeight;
+  const left = -keylessBowWidth;
+  const extrusionHeight = Math.min(keylessBowThickness, keyWidth);
+  const holeRadius = 2.1 / 2;
+  const holeCenterX = -(4.78 - holeRadius);
+  const holeCenterY = bottom + (2.42 + holeRadius);
+
+  const bow = extrudePolygon(
     [
-      [-leftProfileWidth, bottom],
       [0, bottom],
       [0, top],
-      [-leftProfileWidth, top],
+      [left + keylessBowTopChamfer, top],
+      [left, top - keylessBowTopChamfer],
+      [left, bottom + keylessBowBottomChamfer],
+      [left + keylessBowBottomChamfer, bottom],
     ],
-    keyWidth,
+    extrusionHeight,
   ).translateZ(-keyWidth / 2);
+
+  const hole = makeCylinder(
+    holeRadius,
+    extrusionHeight + 0.2,
+    [holeCenterX, holeCenterY, -keyWidth / 2 - 0.1],
+    [0, 0, 1],
+  );
+
+  return bow.cut(hole);
 }
 
 function octagonalBow(keyWidth: number): Shape3D {
@@ -237,7 +262,7 @@ function octagonalBow(keyWidth: number): Shape3D {
 function handleExtension(type: HandleType, keyWidth: number): Shape3D {
   return type === "octagonal"
     ? octagonalBow(keyWidth)
-    : leftProfileExtension(keyWidth);
+    : keylessBow(keyWidth);
 }
 
 function keyBlankHalf(cutA: Bitting, cutB: Bitting, keyWidth: number): Shape3D {
@@ -277,7 +302,7 @@ function bottomProfileNotchCutter(keyWidth: number): Shape3D {
   const xRampEnd = xStart + bottomNotchDepth;
   const yNotch = yStart + bottomNotchDepth;
   const xSquareEdge = keyLength - bottomNotchRightFromTip;
-  const yExit = yStart - Math.max(leftProfileHeight, bowHeight) - cutterOverlap;
+  const yExit = yStart - keylessBowHeight - cutterOverlap;
 
   return extrudePolygon(
     [
