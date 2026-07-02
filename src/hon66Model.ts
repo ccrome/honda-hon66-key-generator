@@ -24,7 +24,7 @@ export const defaultParams: Hon66Params = {
 const inch = 25.4;
 
 const keyLength = 1.834 * inch;
-const keyHeight = 0.311 * inch;
+const keyHeight = 9;
 const tipChamfer = 0.106 * inch;
 const webThickness = 0.015 * inch;
 const tipProfileHalfHeight = (0.0315 * inch) / 2;

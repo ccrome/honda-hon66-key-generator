@@ -6,7 +6,7 @@ $fn = 64;
 inch = 25.4;
 
 key_length = 1.834 * inch;
-key_height = 0.311 * inch;
+key_height = 9;
 key_width = 3;
 tip_chamfer = 0.106 * inch;
 web_thickness = 0.015 * inch;
