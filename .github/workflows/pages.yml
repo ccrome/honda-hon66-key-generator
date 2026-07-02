@@ -54,4 +54,4 @@ jobs:
         uses: actions/deploy-pages@v5
         with:
           # Allow extra queue/provisioning time before failing deployment polling (30 minutes).
-          timeout: 1800000
+          timeout: 1800
