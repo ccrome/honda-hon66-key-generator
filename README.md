@@ -2,6 +2,8 @@
 
 Browser-based HON66 key geometry generator with live 3D preview and STEP/STL export.
 
+App: [GitHub Pages](https://ccrome.github.io/honda-hon66-key-generator/)
+
 Repository: [origin](https://github.com/ccrome/honda-hon66-key-generator)
 
 ## What It Does
