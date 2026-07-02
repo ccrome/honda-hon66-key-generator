@@ -46,7 +46,8 @@ const cut1WebDistance = 6.9;
 const cut1Depth = (keyHeight - cut1WebDistance) / 2;
 const cutStep = 0.014 * inch;
 const cutLand = 1;
-const leadInLand = 4;
+const leadInAngleDeg = 35;
+const leadInLand = cut1Depth / Math.tan((leadInAngleDeg * Math.PI) / 180);
 
 type Point2 = [number, number];
 
