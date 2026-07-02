@@ -43,10 +43,6 @@ app.innerHTML = `
           <input id="cut-b" name="cutB" inputmode="numeric" pattern="[1-6]{6}" maxlength="6" value="${formatBitting(defaultParams.cutB)}" />
         </label>
         <label>
-          <span>Width, mm</span>
-          <input id="key-width" name="keyWidth" type="number" min="1" max="8" step="0.1" value="${defaultParams.keyWidth}" />
-        </label>
-        <label>
           <span>Handle</span>
           <select id="handle-type" name="handleType">
             <option value="keyless" ${defaultParams.handleType === "keyless" ? "selected" : ""}>Keyless</option>
@@ -72,6 +68,7 @@ app.innerHTML = `
       </dl>
 
       <p class="privacy-note">Runs entirely in your browser. No key data is stored locally or sent to a server. For extra privacy, use an incognito or private window.</p>
+      <p class="warning-note">Warning: this is a generated model, not a guaranteed working key. A printed or machined part can break in use, especially in an ignition cylinder, and a broken piece can create expensive removal or repair costs. Do not use this on an ignition or any other critical lock without verifying fit, strength, and safe removal first.</p>
     </aside>
 
     <section class="viewer-panel">
@@ -83,7 +80,6 @@ app.innerHTML = `
 const form = requireElement<HTMLFormElement>("#params-form");
 const cutAInput = requireElement<HTMLInputElement>("#cut-a");
 const cutBInput = requireElement<HTMLInputElement>("#cut-b");
-const keyWidthInput = requireElement<HTMLInputElement>("#key-width");
 const handleTypeInput = requireElement<HTMLSelectElement>("#handle-type");
 const statusNode = requireElement<HTMLElement>("#status");
 const stepButton = requireElement<HTMLButtonElement>("#export-step");
@@ -182,15 +178,9 @@ function updatePreview(shape: Shape3D) {
 }
 
 function readParams(): Hon66Params {
-  const keyWidth = Number(keyWidthInput.value);
-  if (!Number.isFinite(keyWidth) || keyWidth <= 0) {
-    throw new Error("Width must be a positive number.");
-  }
-
   return {
     cutA: parseBitting(cutAInput.value),
     cutB: parseBitting(cutBInput.value),
-    keyWidth,
     handleType: handleTypeInput.value as HandleType,
   };
 }

@@ -26,6 +26,10 @@ The handle selector includes:
 
 The app runs entirely in your browser. No key data is stored locally or sent to a server. For extra privacy, use an incognito or private browser window.
 
+## Safety
+
+This generator produces a model, not a guaranteed working key. A finished part can break in use, including in an ignition cylinder, which can leave debris behind and lead to expensive removal or repair work. Do not use the output on an ignition or any other critical lock unless you have verified fit, strength, and a safe way to remove a failed part.
+
 ## Local Development
 
 Requirements:
