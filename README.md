@@ -14,7 +14,7 @@ Current defaults:
 
 - A bitting: `234561`
 - B bitting: `654321`
-- Key width: `3mm`
+- Key thickness: `3mm`
 - Handle: octagonal bow
 
 The handle selector includes:
@@ -104,3 +104,7 @@ The generated model can be exported as:
 ## Notes
 
 This is a modeling tool, not a guarantee that an exported key will be mechanically correct or safe to use. Verify dimensions and behavior against your actual requirements before manufacturing anything.
+
+## License
+
+The source code and project files are available under the custom noncommercial license in [`LICENSE`](./LICENSE). Generated keys, models, and export files are not restricted by that license and may be used commercially.

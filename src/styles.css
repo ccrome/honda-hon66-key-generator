@@ -119,33 +119,6 @@ button:disabled {
   gap: 10px;
 }
 
-.readout {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-  border-top: 1px solid #dce2e8;
-  padding-top: 18px;
-}
-
-.readout div {
-  display: grid;
-  gap: 3px;
-}
-
-dt {
-  color: #697681;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-dd {
-  margin: 0;
-  color: #25313c;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
 .privacy-note {
   margin: 0;
   border-top: 1px solid #dce2e8;
