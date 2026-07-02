@@ -87,7 +87,6 @@ https://ccrome.github.io/honda-hon66-key-generator/
 - `src/hon66Model.ts`: Parametric CAD model and geometry generation.
 - `src/main.ts`: Browser UI, Three.js preview, and export handling.
 - `src/styles.css`: App styling.
-- `hon66_key.scad`: Earlier OpenSCAD reference model.
 - `.github/workflows/pages.yml`: GitHub Pages deployment workflow.
 - `vite.config.ts`: Vite build configuration.
 
