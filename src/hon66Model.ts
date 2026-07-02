@@ -282,16 +282,18 @@ function positiveYzChamferCutter(): Shape3D {
   const cutterOverlap = 0.1;
   const yOuter = keyHeight / 2;
   const zOuter = keyThickness / 2;
+  const xStart = -keylessBowWidth - xMargin;
+  const xEnd = keyLength + xMargin;
 
   return extrudePolygon(
     [
       [yOuter + cutterOverlap, zOuter + cutterOverlap],
       [yOuter - longEdgeChamfer, zOuter + cutterOverlap],
-    [yOuter + cutterOverlap, zOuter - longEdgeChamfer],
+      [yOuter + cutterOverlap, zOuter - longEdgeChamfer],
     ],
-    keyLength + 2 * xMargin,
+    xEnd - xStart,
     "YZ",
-  ).translateX(-xMargin);
+  ).translateX(xStart);
 }
 
 function bottomProfileNotchCutter(): Shape3D {
