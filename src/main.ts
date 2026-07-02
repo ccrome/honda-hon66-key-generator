@@ -56,17 +56,6 @@ app.innerHTML = `
         <button id="export-stl" type="button" disabled>Export STL</button>
       </div>
 
-      <dl class="readout">
-        <div>
-          <dt>Status</dt>
-          <dd id="status">Loading CAD kernel...</dd>
-        </div>
-        <div>
-          <dt>Engine</dt>
-          <dd>replicad / OpenCascade WASM</dd>
-        </div>
-      </dl>
-
       <p class="privacy-note">Runs entirely in your browser. No key data is stored locally or sent to a server. For extra privacy, use an incognito or private window.</p>
       <p class="warning-note">Warning: this is a generated model, not a guaranteed working key. A printed or machined part can break in use, especially in an ignition cylinder, and a broken piece can create expensive removal or repair costs. Do not use this on an ignition or any other critical lock without verifying fit, strength, and safe removal first.</p>
     </aside>
@@ -81,7 +70,6 @@ const form = requireElement<HTMLFormElement>("#params-form");
 const cutAInput = requireElement<HTMLInputElement>("#cut-a");
 const cutBInput = requireElement<HTMLInputElement>("#cut-b");
 const handleTypeInput = requireElement<HTMLSelectElement>("#handle-type");
-const statusNode = requireElement<HTMLElement>("#status");
 const stepButton = requireElement<HTMLButtonElement>("#export-step");
 const stlButton = requireElement<HTMLButtonElement>("#export-stl");
 const viewerNode = requireElement<HTMLDivElement>("#viewer");
@@ -116,10 +104,6 @@ const grid = new THREE.GridHelper(70, 14, 0xc5ccd3, 0xe0e4e8);
 grid.rotation.x = Math.PI / 2;
 grid.position.z = -2.2;
 scene.add(grid);
-
-function setStatus(text: string) {
-  statusNode.textContent = text;
-}
 
 function resizeRenderer() {
   const rect = viewerNode.getBoundingClientRect();
@@ -187,7 +171,6 @@ function readParams(): Hon66Params {
 
 async function rebuild() {
   const requestId = ++rebuildGeneration;
-  setStatus("Generating model...");
   stepButton.disabled = true;
   stlButton.disabled = true;
 
@@ -199,8 +182,6 @@ async function rebuild() {
 
   stepButton.disabled = false;
   stlButton.disabled = false;
-  const handleLabel = currentParams.handleType === "octagonal" ? "octagonal bow" : "keyless";
-  setStatus(`Ready: A${formatBitting(currentParams.cutA)} B${formatBitting(currentParams.cutB)}, ${handleLabel}`);
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -228,7 +209,7 @@ function scheduleRebuild() {
     rebuild().catch((error: unknown) => {
       stepButton.disabled = true;
       stlButton.disabled = true;
-      setStatus(error instanceof Error ? error.message : "Generation failed.");
+      console.error(error);
     });
   }, 250);
 }
@@ -239,7 +220,7 @@ function handleInputChange() {
   } catch (error: unknown) {
     stepButton.disabled = true;
     stlButton.disabled = true;
-    setStatus(error instanceof Error ? error.message : "Generation failed.");
+    console.error(error);
     return;
   }
 
@@ -269,5 +250,5 @@ animate();
   setOC(oc as Parameters<typeof setOC>[0]);
   return rebuild();
 }).catch((error: unknown) => {
-  setStatus(error instanceof Error ? error.message : "Could not load CAD kernel.");
+  console.error(error);
 });
