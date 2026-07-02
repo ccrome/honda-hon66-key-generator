@@ -18,7 +18,7 @@ export const defaultParams: Hon66Params = {
   cutA: [2, 3, 4, 5, 6, 1],
   cutB: [6, 5, 4, 3, 2, 1],
   keyWidth: 3,
-  handleType: "keyless",
+  handleType: "octagonal",
 };
 
 const inch = 25.4;
