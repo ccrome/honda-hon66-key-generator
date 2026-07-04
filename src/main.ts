@@ -73,7 +73,7 @@ app.innerHTML = `
       </div>
 
       <p class="privacy-note">Runs entirely in your browser. No key data is stored locally or sent to a server. For extra privacy, use an incognito or private window.</p>
-      <p class="warning-note">Warning: this is a generated model, not a guaranteed working key. A printed or machined part can break in use, especially in an ignition cylinder, and a broken piece can create expensive removal or repair costs. Do not use this on an ignition or any other critical lock without verifying fit, strength, and safe removal first.</p>
+      <p class="warning-note">Warning: this is a generated model, not a guaranteed working key. Honda keyways are already a pain, and a shitty plastic key can make them worse. A failed part can snap in the ignition, jam the cylinder, and turn into an expensive removal or repair job. Do not use this on an ignition or any other critical lock unless you have verified fit, strength, and safe removal first.</p>
       <p class="material-note">Filament guidance: ASA is an okay option, PETG might be okay, and PLA is definitely out because of temperature issues except for fit checks. For non-critical test fitting, nylon/PA, PA-CF, or polycarbonate are stronger options. Do not use resin prints, flexible TPU, silk, wood-filled, glow, or other brittle or decorative filaments for functional keys.</p>
     </aside>
 
