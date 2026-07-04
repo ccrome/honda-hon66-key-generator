@@ -50,6 +50,7 @@ const leadInAngleDeg = 35;
 const leadInLand = cut1Depth / Math.tan((leadInAngleDeg * Math.PI) / 180);
 
 type Point2 = [number, number];
+export type PreviewPolygon = Point2[];
 
 export function parseBitting(value: string): Bitting {
   const digits = value.trim().split("").map((char) => Number(char));
@@ -172,6 +173,42 @@ function keyOutlinePoints(): Point2[] {
     [keyLength, keyHeight / 2 - tipChamfer],
     [keyLength - tipChamfer, keyHeight / 2],
     [0, keyHeight / 2],
+  ];
+}
+
+export function previewKeyOutlinePoints(): PreviewPolygon {
+  return keyOutlinePoints();
+}
+
+export function previewKeyProfilePoints(cutA: Bitting, cutB: Bitting): PreviewPolygon {
+  return keyProfilePoints(cutA, cutB);
+}
+
+export function previewKeylessBowPoints(): PreviewPolygon {
+  const top = keyHeight / 2;
+  const bottom = top - keylessBowHeight;
+  const left = -keylessBowWidth;
+  return [
+    [0, bottom],
+    [0, top],
+    [left + keylessBowTopChamfer, top],
+    [left, top - keylessBowTopChamfer],
+    [left, bottom + keylessBowBottomChamfer],
+    [left + keylessBowBottomChamfer, bottom],
+  ];
+}
+
+export function previewOctagonalBowPoints(): PreviewPolygon {
+  const halfHeight = bowHeight / 2;
+  return [
+    [-bowWidth + bowCorner, -halfHeight],
+    [-bowCorner, -halfHeight],
+    [0, -halfHeight + bowCorner],
+    [0, halfHeight - bowCorner],
+    [-bowCorner, halfHeight],
+    [-bowWidth + bowCorner, halfHeight],
+    [-bowWidth, halfHeight - bowCorner],
+    [-bowWidth, -halfHeight + bowCorner],
   ];
 }
 
