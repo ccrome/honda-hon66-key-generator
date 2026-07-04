@@ -8,6 +8,10 @@ Make Your Key Now!: [GitHub Pages](https://ccrome.github.io/honda-hon66-key-gene
 
 Repository: [origin](https://github.com/ccrome/honda-hon66-key-generator)
 
+## Warning
+
+This is a convenience tool for geometry exploration, not a recommendation to put plastic in a Honda ignition. Honda keyways are already a pain, and a shitty plastic key can make them worse. A failed part can snap in the ignition, jam the cylinder, and turn into an expensive removal or repair job. Do not use the output in an ignition or any other critical lock unless you have verified fit, strength, and safe removal first.
+
 ## What It Does
 
 This app generates a parametric HON66-style key model from A/B bitting values. It runs the CAD model directly in the browser using OpenCascade WebAssembly through `replicad`, previews the result with Three.js, and exports the generated solid as either STEP or STL.
