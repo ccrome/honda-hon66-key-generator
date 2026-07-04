@@ -16,6 +16,8 @@ This is a convenience tool for geometry exploration, not a recommendation to put
 
 This app generates a parametric HON66-style key model from A/B bitting values. It runs the CAD model directly in the browser using OpenCascade WebAssembly through `replicad`, previews the result with Three.js, and exports the generated solid as either STEP or STL.
 
+It also exports a six-piece HON66 key decoder set. Each decoder is an L-shaped gauge for one of the six bitting depths. The measuring tip is thinned with a chamfer so it can sit against the webbing and read the distance to the cut.
+
 Current defaults:
 
 - A bitting: `234561`
@@ -27,6 +29,24 @@ The handle selector includes:
 
 - `Octagonal bow`: standard bow-style handle with a through hole.
 - `Keyless`: rectangular/keyless-style handle with the keyless-specific notch and top chamfer.
+
+## Key Decoding
+
+The decoder exports are meant to help read an existing HON66-style key by comparing the cut depth against six fixed gauges:
+
+1. Export either the `1-color decoder` or `2-color decoder`.
+2. Print the decoder set.
+3. Put the L-shaped measuring tip against the key webbing at a cut position.
+4. Find the decoder that sits flush against the cut.
+5. Record that decoder number as the bitting depth for that position.
+6. Repeat for all six positions on side A and side B.
+
+Decoder export options:
+
+- `1-color decoder`: single-material print, debossed numbers only. Print right side up.
+- `2-color decoder`: separate second-color number fill objects. Print upside down so the top surface stays flat.
+
+The decoders are geometry aids, not calibrated commercial locksmith tools. Verify against known keys or actual measured depths before trusting the decoded bitting.
 
 ## Privacy
 
@@ -118,6 +138,8 @@ The generated model can be exported as:
 
 - `STEP`: Preferred CAD interchange format.
 - `STL`: Mesh format for slicers and quick inspection.
+
+The decoder set can also be exported as STEP or STL in either 1-color or 2-color form.
 
 ## Notes
 

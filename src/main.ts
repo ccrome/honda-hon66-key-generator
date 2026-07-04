@@ -3,10 +3,13 @@ import wasmUrl from "replicad-opencascadejs/src/replicad_single.wasm?url";
 import { setOC, type Shape3D } from "replicad";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { marked } from "marked";
 import { parse as parseYaml } from "yaml";
+import readmeMarkdown from "../README.md?raw";
 import "./styles.css";
 import {
   buildHon66Key,
+  buildHon66DecoderSetParts,
   defaultParams,
   formatBitting,
   previewKeyOutlinePoints,
@@ -14,9 +17,15 @@ import {
   parseBitting,
   previewKeylessBowPoints,
   previewOctagonalBowPoints,
+  type DecoderVariant,
   type HandleType,
   type Hon66Params,
 } from "./hon66Model";
+import {
+  exportShapesStep,
+  exportShapesStl,
+  shapeToGeometry,
+} from "./geometryExport";
 
 type OpenCascadeInit = (config?: { locateFile?: (path: string) => string }) => Promise<unknown>;
 
@@ -36,12 +45,15 @@ type Testimonial = {
 const app = requireElement<HTMLDivElement>("#app");
 
 app.innerHTML = `
-  <div class="app-shell">
+  <div id="generator-view" class="app-shell">
     <aside class="controls">
       <header>
         <h1>Honda HON66 Key Generator</h1>
         <p id="testimonial" class="testimonial"></p>
-        <a class="repo-link" href="https://github.com/ccrome/honda-hon66-key-generator" target="_blank" rel="noreferrer">GitHub repository</a>
+        <nav class="header-links">
+          <a class="repo-link" href="https://github.com/ccrome/honda-hon66-key-generator" target="_blank" rel="noreferrer">GitHub repository</a>
+          <a class="repo-link" href="#instructions">Instructions</a>
+        </nav>
       </header>
 
       <form id="params-form" class="form" novalidate>
@@ -71,6 +83,14 @@ app.innerHTML = `
         <button id="export-step" type="button" disabled>Export STEP</button>
         <button id="export-stl" type="button" disabled>Export STL</button>
       </div>
+      <div class="actions">
+        <button id="export-decoder-one-step" type="button">Export 1-color decoder STEP</button>
+        <button id="export-decoder-one-stl" type="button">Export 1-color decoder STL</button>
+      </div>
+      <div class="actions">
+        <button id="export-decoder-two-step" type="button">Export 2-color decoder STEP</button>
+        <button id="export-decoder-two-stl" type="button">Export 2-color decoder STL</button>
+      </div>
 
       <p class="privacy-note">Runs entirely in your browser. No key data is stored locally or sent to a server. For extra privacy, use an incognito or private window.</p>
       <p class="warning-note">Warning: this is a generated model, not a guaranteed working key. Honda keyways are already a pain, and a shitty plastic key can make them worse. A failed part can snap in the ignition, jam the cylinder, and turn into an expensive removal or repair job. Do not use this on an ignition or any other critical lock unless you have verified fit, strength, and safe removal first.</p>
@@ -81,8 +101,18 @@ app.innerHTML = `
       <div id="viewer" class="viewer"></div>
     </section>
   </div>
+
+  <section id="instructions-view" class="instructions-page" hidden>
+    <header class="instructions-header">
+      <a class="repo-link" href="#generator">Back to generator</a>
+    </header>
+    <article id="instructions-content" class="instructions-content"></article>
+  </section>
 `;
 
+const generatorView = requireElement<HTMLElement>("#generator-view");
+const instructionsView = requireElement<HTMLElement>("#instructions-view");
+const instructionsContent = requireElement<HTMLElement>("#instructions-content");
 const form = requireElement<HTMLFormElement>("#params-form");
 const cutAInput = requireElement<HTMLInputElement>("#cut-a");
 const cutBInput = requireElement<HTMLInputElement>("#cut-b");
@@ -90,9 +120,15 @@ const handleTypeInput = requireElement<HTMLSelectElement>("#handle-type");
 const testimonialNode = requireElement<HTMLElement>("#testimonial");
 const stepButton = requireElement<HTMLButtonElement>("#export-step");
 const stlButton = requireElement<HTMLButtonElement>("#export-stl");
+const decoderOneStepButton = requireElement<HTMLButtonElement>("#export-decoder-one-step");
+const decoderOneStlButton = requireElement<HTMLButtonElement>("#export-decoder-one-stl");
+const decoderTwoStepButton = requireElement<HTMLButtonElement>("#export-decoder-two-step");
+const decoderTwoStlButton = requireElement<HTMLButtonElement>("#export-decoder-two-stl");
 const viewerNode = requireElement<HTMLDivElement>("#viewer");
 const preview2dCanvas = requireElement<HTMLCanvasElement>("#preview-2d");
 const preview2dContext = preview2dCanvas.getContext("2d");
+
+instructionsContent.innerHTML = marked.parse(readmeMarkdown, { async: false }) as string;
 
 let currentShape: Shape3D | null = null;
 let currentParams: Hon66Params = defaultParams;
@@ -163,6 +199,19 @@ async function loadTestimonials() {
   }
 }
 
+function updateRoute() {
+  const showInstructions = window.location.hash === "#instructions";
+  generatorView.hidden = showInstructions;
+  instructionsView.hidden = !showInstructions;
+  if (!showInstructions) {
+    resizeRenderer();
+    if (currentGeometry) {
+      resizePreview2d();
+      draw2dPreview(currentGeometry);
+    }
+  }
+}
+
 function resizeRenderer() {
   const rect = viewerNode.getBoundingClientRect();
   renderer.setSize(rect.width, rect.height, false);
@@ -176,16 +225,6 @@ function resizePreview2d() {
   const height = Math.max(1, Math.floor(rect.height * window.devicePixelRatio));
   if (preview2dCanvas.width !== width) preview2dCanvas.width = width;
   if (preview2dCanvas.height !== height) preview2dCanvas.height = height;
-}
-
-function shapeToGeometry(shape: Shape3D) {
-  const mesh = shape.mesh({ tolerance: 0.04, angularTolerance: 0.25 });
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(mesh.vertices, 3));
-  geometry.setIndex(mesh.triangles);
-  geometry.computeVertexNormals();
-  geometry.computeBoundingBox();
-  return geometry;
 }
 
 function topFaceGeometry(geometry: THREE.BufferGeometry) {
@@ -497,10 +536,25 @@ function exportCurrent(kind: "step" | "stl") {
   if (!currentShape) return;
   const bitting = `${formatBitting(currentParams.cutA)}_${formatBitting(currentParams.cutB)}_${currentParams.handleType}`;
   const blob = kind === "step"
-    ? currentShape.blobSTEP()
-    : currentShape.blobSTL({ tolerance: 0.03, angularTolerance: 0.2, binary: true });
+    ? exportShapesStep([{ shape: currentShape, name: `hon66_${bitting}`, color: "#b8c4cf", alpha: 1 }])
+    : exportShapesStl([currentShape], `hon66_${bitting}`);
 
   downloadBlob(blob, `hon66_${bitting}.${kind === "step" ? "step" : "stl"}`);
+}
+
+function exportDecoderSet(kind: "step" | "stl", variant: DecoderVariant) {
+  const parts = buildHon66DecoderSetParts(variant);
+  const shapes = parts.map((part) => part.shape);
+  const variantLabel = variant === "oneColor" ? "1color" : "2color";
+  const blob = kind === "step"
+    ? exportShapesStep(parts.map((part, index) => ({
+      shape: part.shape,
+      name: `hon66_decoder_${part.depth}_${part.role}_${index + 1}`,
+      color: part.role === "numberFill" ? "#2f6fb0" : "#d98c2b",
+      alpha: 1,
+    })))
+    : exportShapesStl(shapes, "hon66_decoder_set");
+  downloadBlob(blob, `hon66_decoder_set_${variantLabel}.${kind === "step" ? "step" : "stl"}`);
 }
 
 function scheduleRebuild() {
@@ -528,6 +582,10 @@ form.addEventListener("submit", (event) => event.preventDefault());
 
 stepButton.addEventListener("click", () => exportCurrent("step"));
 stlButton.addEventListener("click", () => exportCurrent("stl"));
+decoderOneStepButton.addEventListener("click", () => exportDecoderSet("step", "oneColor"));
+decoderOneStlButton.addEventListener("click", () => exportDecoderSet("stl", "oneColor"));
+decoderTwoStepButton.addEventListener("click", () => exportDecoderSet("step", "twoColor"));
+decoderTwoStlButton.addEventListener("click", () => exportDecoderSet("stl", "twoColor"));
 window.addEventListener("resize", resizeRenderer);
 window.addEventListener("resize", () => {
   resizePreview2d();
@@ -535,6 +593,7 @@ window.addEventListener("resize", () => {
     draw2dPreview(currentGeometry);
   }
 });
+window.addEventListener("hashchange", updateRoute);
 
 function animate() {
   controls.update();
@@ -543,6 +602,7 @@ function animate() {
 }
 
 resizeRenderer();
+updateRoute();
 animate();
 updateBittingValidation(cutAInput);
 updateBittingValidation(cutBInput);

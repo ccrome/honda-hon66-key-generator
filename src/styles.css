@@ -50,6 +50,12 @@ header {
   margin-bottom: 6px;
 }
 
+.header-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
 h1 {
   margin: 0;
   font-size: 34px;
@@ -75,6 +81,10 @@ h1 {
 
 .repo-link:hover {
   text-decoration: underline;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .form {
@@ -112,13 +122,16 @@ input.is-invalid:focus {
 }
 
 button {
-  height: 38px;
+  min-height: 38px;
   border: 1px solid #1f6f8b;
   border-radius: 6px;
   background: #257f9f;
   color: #ffffff;
   font-weight: 700;
   cursor: pointer;
+  padding: 8px 12px;
+  line-height: 1.2;
+  white-space: normal;
 }
 
 button:hover:not(:disabled) {
@@ -136,6 +149,11 @@ button:disabled {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+}
+
+.actions + .actions {
+  margin-top: 10px;
+  margin-bottom: 4px;
 }
 
 .preview-panel {
@@ -196,6 +214,74 @@ button:disabled {
   height: 100%;
 }
 
+.instructions-page {
+  min-height: 100%;
+  background: #fbfcfd;
+  color: #1c242c;
+}
+
+.instructions-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid #d1d8df;
+  background: #fbfcfd;
+  padding: 16px 24px;
+}
+
+.instructions-content {
+  width: min(920px, 100%);
+  padding: 28px 24px 56px;
+}
+
+.instructions-content h1,
+.instructions-content h2,
+.instructions-content h3 {
+  line-height: 1.15;
+}
+
+.instructions-content h1 {
+  margin: 0 0 18px;
+  font-size: 34px;
+}
+
+.instructions-content h2 {
+  margin: 32px 0 10px;
+  font-size: 22px;
+}
+
+.instructions-content p,
+.instructions-content li {
+  color: #34424f;
+  line-height: 1.55;
+}
+
+.instructions-content img {
+  display: block;
+  max-width: min(100%, 640px);
+  height: auto;
+  border: 1px solid #d1d8df;
+  border-radius: 6px;
+}
+
+.instructions-content pre {
+  overflow-x: auto;
+  border: 1px solid #d1d8df;
+  border-radius: 6px;
+  background: #eef2f5;
+  padding: 12px;
+}
+
+.instructions-content code {
+  border-radius: 4px;
+  background: #eef2f5;
+  padding: 1px 4px;
+}
+
+.instructions-content pre code {
+  padding: 0;
+}
+
 canvas {
   display: block;
 }
@@ -227,6 +313,18 @@ canvas {
 
   .repo-link {
     font-size: 13px;
+  }
+
+  .instructions-header {
+    padding: 14px 18px;
+  }
+
+  .instructions-content {
+    padding: 22px 18px 44px;
+  }
+
+  .instructions-content h1 {
+    font-size: 28px;
   }
 
   .actions {

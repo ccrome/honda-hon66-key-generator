@@ -13,6 +13,15 @@ export interface Hon66Params {
   handleType: HandleType;
 }
 
+export type DecoderPartRole = "body" | "numberFill";
+export type DecoderVariant = "oneColor" | "twoColor";
+
+export type DecoderPart = {
+  shape: Shape3D;
+  depth: number;
+  role: DecoderPartRole;
+};
+
 export const defaultParams: Hon66Params = {
   cutA: [2, 3, 4, 5, 6, 1],
   cutB: [6, 5, 4, 3, 2, 1],
@@ -48,6 +57,20 @@ const cutStep = 0.014 * inch;
 const cutLand = 1;
 const leadInAngleDeg = 35;
 const leadInLand = cut1Depth / Math.tan((leadInAngleDeg * Math.PI) / 180);
+const decoderBodyWidth = 22;
+const decoderBodyHeight = 10;
+const decoderArmThickness = 4;
+const decoderGap = 4;
+const decoderHoleRadius = 2.25;
+const decoderHoleInset = 5;
+const decoderSetThickness = 1;
+const decoderNumberDepth = 0.4;
+const decoderNumberX = -14;
+const decoderNumberHeight = 5.4;
+const decoderNumberWidth = 3.4;
+const decoderNumberStroke = 0.55;
+const decoderTipChamferLength = 1.4;
+const decoderTipChamferDepth = 0.35;
 
 type Point2 = [number, number];
 export type PreviewPolygon = Point2[];
@@ -236,6 +259,177 @@ function polygonSketch(points: Point2[], plane: "XY" | "YZ" = "XY") {
 
 function extrudePolygon(points: Point2[], height: number, plane: "XY" | "YZ" = "XY"): Shape3D {
   return polygonSketch(points, plane).extrude(height) as Shape3D;
+}
+
+function extrudeXzPolygonAlongY(points: Point2[], yStart: number, yDepth: number): Shape3D {
+  return extrudePolygon(points, yDepth)
+    .rotate(90, [0, 0, 0], [1, 0, 0])
+    .translateY(yStart + yDepth);
+}
+
+function rectanglePoints(left: number, bottom: number, right: number, top: number): Point2[] {
+  return [
+    [left, bottom],
+    [right, bottom],
+    [right, top],
+    [left, top],
+  ];
+}
+
+function decoderDigitSegments(digit: number) {
+  const segmentMap: Record<number, Array<"top" | "upperLeft" | "upperRight" | "middle" | "lowerLeft" | "lowerRight" | "bottom">> = {
+    1: ["upperRight", "lowerRight"],
+    2: ["top", "upperRight", "middle", "lowerLeft", "bottom"],
+    3: ["top", "upperRight", "middle", "lowerRight", "bottom"],
+    4: ["upperLeft", "upperRight", "middle", "lowerRight"],
+    5: ["top", "upperLeft", "middle", "lowerRight", "bottom"],
+    6: ["top", "upperLeft", "middle", "lowerLeft", "lowerRight", "bottom"],
+  };
+  return segmentMap[digit] ?? [];
+}
+
+type DecoderDigitSegment = ReturnType<typeof decoderDigitSegments>[number];
+
+function decoderDigitSegmentRects(): Record<DecoderDigitSegment, Point2[]> {
+  const width = decoderNumberWidth;
+  const height = decoderNumberHeight;
+  const stroke = decoderNumberStroke;
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const verticalTop = halfHeight - stroke / 2;
+  const verticalBottom = -halfHeight + stroke / 2;
+  return {
+    top: rectanglePoints(-halfWidth, halfHeight - stroke, halfWidth, halfHeight),
+    middle: rectanglePoints(-halfWidth, -stroke / 2, halfWidth, stroke / 2),
+    bottom: rectanglePoints(-halfWidth, -halfHeight, halfWidth, -halfHeight + stroke),
+    upperLeft: rectanglePoints(-halfWidth, stroke / 2, -halfWidth + stroke, verticalTop),
+    upperRight: rectanglePoints(halfWidth - stroke, stroke / 2, halfWidth, verticalTop),
+    lowerLeft: rectanglePoints(-halfWidth, verticalBottom, -halfWidth + stroke, -stroke / 2),
+    lowerRight: rectanglePoints(halfWidth - stroke, verticalBottom, halfWidth, -stroke / 2),
+  };
+}
+
+function decoderDigitCutters(digit: number): Shape3D[] {
+  const cutterHeight = decoderNumberDepth + 0.1;
+  const cutterZ = decoderSetThickness / 2 - decoderNumberDepth;
+  const segmentRects = decoderDigitSegmentRects();
+
+  return decoderDigitSegments(digit).map((segment) => (
+    extrudePolygon(segmentRects[segment], cutterHeight)
+      .translateX(decoderNumberX)
+      .translateZ(cutterZ)
+  ));
+}
+
+function decoderDigitFillParts(digit: number): Shape3D[] {
+  const fillHeight = decoderNumberDepth;
+  const fillZ = decoderSetThickness / 2 - decoderNumberDepth;
+  const segmentRects = decoderDigitSegmentRects();
+
+  return decoderDigitSegments(digit).map((segment) => (
+    extrudePolygon(segmentRects[segment], fillHeight)
+      .translateX(decoderNumberX)
+      .translateZ(fillZ)
+  ));
+}
+
+function decoderTipChamferCutter(armLeft: number, armTop: number, bodyBottom: number, face: "top" | "bottom"): Shape3D {
+  const cutterOverlap = 0.1;
+  const yStart = bodyBottom - cutterOverlap;
+  const yDepth = armTop - bodyBottom + 2 * cutterOverlap;
+  const zTop = decoderSetThickness / 2 + cutterOverlap;
+  const zBottom = -decoderSetThickness / 2 - cutterOverlap;
+  const xOuter = armLeft - cutterOverlap;
+  const xInner = armLeft + decoderTipChamferLength;
+  const points: Point2[] = face === "top"
+    ? [
+      [xOuter, zTop],
+      [xInner, zTop],
+      [xOuter, zTop - decoderTipChamferDepth - cutterOverlap],
+    ]
+    : [
+      [xOuter, zBottom],
+      [xOuter, zBottom + decoderTipChamferDepth + cutterOverlap],
+      [xInner, zBottom],
+    ];
+
+  return extrudeXzPolygonAlongY(
+    points,
+    yStart,
+    yDepth,
+  );
+}
+
+function decoderPiece(length: number, depth: number, variant: DecoderVariant): DecoderPart[] {
+  const bodyBottom = -decoderBodyHeight / 2;
+  const bodyTop = decoderBodyHeight / 2;
+  const armTop = bodyBottom + decoderArmThickness;
+  const armLeft = -(decoderBodyWidth + length);
+  const armRight = -decoderBodyWidth;
+  const bodyRight = 0;
+  const bodyLeft = -decoderBodyWidth;
+  const holeCenterX = bodyRight - decoderHoleInset;
+  const holeCenterY = 0;
+
+  const piece = extrudePolygon(
+    [
+      [armLeft, bodyBottom],
+      [bodyRight, bodyBottom],
+      [bodyRight, bodyTop],
+      [bodyLeft, bodyTop],
+      [bodyLeft, armTop],
+      [armLeft, armTop],
+    ],
+    decoderSetThickness,
+  ).translateZ(-decoderSetThickness / 2);
+
+  const hole = makeCylinder(
+    decoderHoleRadius,
+    decoderSetThickness + 0.2,
+    [holeCenterX, holeCenterY, -decoderSetThickness / 2 - 0.1],
+    [0, 0, 1],
+  );
+
+  let result = piece.cut(hole);
+  for (const cutter of decoderDigitCutters(depth)) {
+    result = result.cut(cutter);
+  }
+  result = result.cut(decoderTipChamferCutter(
+    armLeft,
+    armTop,
+    bodyBottom,
+    variant === "oneColor" ? "top" : "bottom",
+  ));
+
+  const body = { shape: result, depth, role: "body" as const };
+  if (variant === "oneColor") {
+    return [body];
+  }
+
+  const fills = decoderDigitFillParts(depth).map((shape) => ({
+    shape,
+    depth,
+    role: "numberFill" as const,
+  }));
+  return [body, ...fills];
+}
+
+export function buildHon66DecoderSetParts(variant: DecoderVariant = "twoColor"): DecoderPart[] {
+  const pieces: DecoderPart[] = [];
+  for (let depth = 1; depth <= 6; depth += 1) {
+    const length = cut1Depth + (depth - 1) * cutStep;
+    const yOffset = (depth - 3.5) * (decoderBodyHeight + decoderGap);
+    const parts = decoderPiece(length, depth, variant).map((part) => ({
+      ...part,
+      shape: part.shape.translateY(yOffset),
+    }));
+    pieces.push(...parts);
+  }
+  return pieces;
+}
+
+export function buildHon66DecoderSet(variant: DecoderVariant = "twoColor"): Shape3D[] {
+  return buildHon66DecoderSetParts(variant).map((part) => part.shape);
 }
 
 function keylessBow(): Shape3D {
