@@ -40,7 +40,7 @@ app.innerHTML = `
     <aside class="controls">
       <header>
         <h1>Honda HON66 Key Generator</h1>
-        <p id="testimonial" class="testimonial">"It got me very close on the first pass." - field note</p>
+        <p id="testimonial" class="testimonial"></p>
         <a class="repo-link" href="https://github.com/ccrome/honda-hon66-key-generator" target="_blank" rel="noreferrer">GitHub repository</a>
       </header>
 
@@ -103,11 +103,7 @@ let currentBottomFace: THREE.Mesh | null = null;
 let rebuildGeneration = 0;
 let rebuildTimer = 0;
 let testimonialTimer = 0;
-let testimonials: Testimonial[] = [
-  { text: "It got me very close on the first pass.", source: "field note" },
-  { text: "The preview made the bitting easier to reason about.", source: "workshop note" },
-  { text: "Handy for quick geometry checks before cutting metal.", source: "test note" },
-];
+let testimonials: Testimonial[] = [];
 let testimonialIndex = 0;
 
 const scene = new THREE.Scene();
@@ -137,6 +133,10 @@ grid.position.z = -2.2;
 scene.add(grid);
 
 function rotateTestimonial() {
+  if (testimonials.length === 0) {
+    testimonialNode.textContent = "";
+    return;
+  }
   testimonialIndex = (testimonialIndex + 1) % testimonials.length;
   const testimonial = testimonials[testimonialIndex];
   testimonialNode.textContent = `"${testimonial.text.trim()}"\n- ${testimonial.source}`;
@@ -156,6 +156,7 @@ async function loadTestimonials() {
   } catch (error) {
     console.error(error);
   } finally {
+    testimonialIndex = -1;
     rotateTestimonial();
     if (testimonialTimer) window.clearInterval(testimonialTimer);
     testimonialTimer = window.setInterval(rotateTestimonial, 5000);
