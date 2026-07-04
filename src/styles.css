@@ -46,7 +46,7 @@ select {
 
 header {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 6px;
 }
 
@@ -55,6 +55,15 @@ h1 {
   font-size: 34px;
   line-height: 1.08;
   font-weight: 800;
+}
+
+.testimonial {
+  margin: 0;
+  color: #8a3d00;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: pre-line;
 }
 
 .repo-link {

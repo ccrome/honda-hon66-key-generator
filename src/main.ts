@@ -3,6 +3,7 @@ import wasmUrl from "replicad-opencascadejs/src/replicad_single.wasm?url";
 import { setOC, type Shape3D } from "replicad";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { parse as parseYaml } from "yaml";
 import "./styles.css";
 import {
   buildHon66Key,
@@ -23,6 +24,11 @@ function requireElement<T extends Element>(selector: string) {
   return element;
 }
 
+type Testimonial = {
+  text: string;
+  source: string;
+};
+
 const app = requireElement<HTMLDivElement>("#app");
 
 app.innerHTML = `
@@ -30,6 +36,7 @@ app.innerHTML = `
     <aside class="controls">
       <header>
         <h1>Honda HON66 Key Generator</h1>
+        <p id="testimonial" class="testimonial">"It got me very close on the first pass." - field note</p>
         <a class="repo-link" href="https://github.com/ccrome/honda-hon66-key-generator" target="_blank" rel="noreferrer">GitHub repository</a>
       </header>
 
@@ -71,6 +78,7 @@ const form = requireElement<HTMLFormElement>("#params-form");
 const cutAInput = requireElement<HTMLInputElement>("#cut-a");
 const cutBInput = requireElement<HTMLInputElement>("#cut-b");
 const handleTypeInput = requireElement<HTMLSelectElement>("#handle-type");
+const testimonialNode = requireElement<HTMLElement>("#testimonial");
 const stepButton = requireElement<HTMLButtonElement>("#export-step");
 const stlButton = requireElement<HTMLButtonElement>("#export-stl");
 const viewerNode = requireElement<HTMLDivElement>("#viewer");
@@ -83,6 +91,13 @@ let currentBottomFace: THREE.Mesh | null = null;
 let currentEdges: THREE.LineSegments | null = null;
 let rebuildGeneration = 0;
 let rebuildTimer = 0;
+let testimonialTimer = 0;
+let testimonials: Testimonial[] = [
+  { text: "It got me very close on the first pass.", source: "field note" },
+  { text: "The preview made the bitting easier to reason about.", source: "workshop note" },
+  { text: "Handy for quick geometry checks before cutting metal.", source: "test note" },
+];
+let testimonialIndex = 0;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf3f5f7);
@@ -109,6 +124,32 @@ const grid = new THREE.GridHelper(70, 14, 0xc5ccd3, 0xe0e4e8);
 grid.rotation.x = Math.PI / 2;
 grid.position.z = -2.2;
 scene.add(grid);
+
+function rotateTestimonial() {
+  testimonialIndex = (testimonialIndex + 1) % testimonials.length;
+  const testimonial = testimonials[testimonialIndex];
+  testimonialNode.textContent = `"${testimonial.text.trim()}"\n- ${testimonial.source}`;
+}
+
+async function loadTestimonials() {
+  try {
+    const response = await fetch("/testimonials.yaml");
+    if (!response.ok) {
+      throw new Error(`Failed to load testimonials: ${response.status}`);
+    }
+
+    const data = parseYaml(await response.text()) as { testimonials?: Testimonial[] };
+    if (Array.isArray(data.testimonials) && data.testimonials.length > 0) {
+      testimonials = data.testimonials;
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    rotateTestimonial();
+    if (testimonialTimer) window.clearInterval(testimonialTimer);
+    testimonialTimer = window.setInterval(rotateTestimonial, 5000);
+  }
+}
 
 function resizeRenderer() {
   const rect = viewerNode.getBoundingClientRect();
@@ -400,6 +441,7 @@ resizeRenderer();
 animate();
 updateBittingValidation(cutAInput);
 updateBittingValidation(cutBInput);
+loadTestimonials();
 
 (initOpenCascade as OpenCascadeInit)({
   locateFile: () => wasmUrl,
