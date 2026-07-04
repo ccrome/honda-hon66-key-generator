@@ -1,6 +1,8 @@
 dist/
 node_modules/
 nohup.out
+.tmp-decoder-validation/
+.tmp-test/
 .env
 .env.*
 *.pem
