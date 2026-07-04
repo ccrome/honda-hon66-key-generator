@@ -9,7 +9,11 @@ import {
   buildHon66Key,
   defaultParams,
   formatBitting,
+  previewKeyOutlinePoints,
+  previewKeyProfilePoints,
   parseBitting,
+  previewKeylessBowPoints,
+  previewOctagonalBowPoints,
   type HandleType,
   type Hon66Params,
 } from "./hon66Model";
@@ -58,6 +62,11 @@ app.innerHTML = `
         </label>
       </form>
 
+      <section class="preview-panel">
+        <div class="preview-label">2D preview</div>
+        <canvas id="preview-2d" class="preview-2d" aria-label="2D preview of the key" role="img"></canvas>
+      </section>
+
       <div class="actions">
         <button id="export-step" type="button" disabled>Export STEP</button>
         <button id="export-stl" type="button" disabled>Export STL</button>
@@ -82,13 +91,15 @@ const testimonialNode = requireElement<HTMLElement>("#testimonial");
 const stepButton = requireElement<HTMLButtonElement>("#export-step");
 const stlButton = requireElement<HTMLButtonElement>("#export-stl");
 const viewerNode = requireElement<HTMLDivElement>("#viewer");
+const preview2dCanvas = requireElement<HTMLCanvasElement>("#preview-2d");
+const preview2dContext = preview2dCanvas.getContext("2d");
 
 let currentShape: Shape3D | null = null;
 let currentParams: Hon66Params = defaultParams;
+let currentGeometry: THREE.BufferGeometry | null = null;
 let currentMesh: THREE.Mesh | null = null;
 let currentTopFace: THREE.Mesh | null = null;
 let currentBottomFace: THREE.Mesh | null = null;
-let currentEdges: THREE.LineSegments | null = null;
 let rebuildGeneration = 0;
 let rebuildTimer = 0;
 let testimonialTimer = 0;
@@ -156,6 +167,14 @@ function resizeRenderer() {
   renderer.setSize(rect.width, rect.height, false);
   camera.aspect = rect.width / rect.height;
   camera.updateProjectionMatrix();
+}
+
+function resizePreview2d() {
+  const rect = preview2dCanvas.getBoundingClientRect();
+  const width = Math.max(1, Math.floor(rect.width * window.devicePixelRatio));
+  const height = Math.max(1, Math.floor(rect.height * window.devicePixelRatio));
+  if (preview2dCanvas.width !== width) preview2dCanvas.width = width;
+  if (preview2dCanvas.height !== height) preview2dCanvas.height = height;
 }
 
 function shapeToGeometry(shape: Shape3D) {
@@ -292,10 +311,10 @@ function updatePreview(shape: Shape3D) {
   currentTopFace?.removeFromParent();
   currentBottomFace?.geometry.dispose();
   currentBottomFace?.removeFromParent();
-  currentEdges?.geometry.dispose();
-  currentEdges?.removeFromParent();
 
   const geometry = shapeToGeometry(shape);
+  currentGeometry?.dispose();
+  currentGeometry = geometry;
   currentMesh = new THREE.Mesh(
     geometry,
     new THREE.MeshStandardMaterial({
@@ -328,12 +347,6 @@ function updatePreview(shape: Shape3D) {
   );
   scene.add(currentBottomFace);
 
-  currentEdges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry, 18),
-    new THREE.LineBasicMaterial({ color: 0x2d3741, transparent: true, opacity: 0.22 }),
-  );
-  scene.add(currentEdges);
-
   if (shouldFrame) {
     const box = geometry.boundingBox;
     if (!box) return;
@@ -344,12 +357,97 @@ function updatePreview(shape: Shape3D) {
     box.getSize(size);
     controls.target.copy(center);
     const maxSize = Math.max(size.x, size.y, size.z);
-    camera.position.set(center.x, center.y, center.z + maxSize * 3.2);
+    const fitMultiplier = window.matchMedia("(max-width: 760px)").matches ? 2.0 : 3.2;
+    camera.position.set(center.x, center.y, center.z + maxSize * fitMultiplier);
     camera.near = Math.max(0.01, maxSize / 1000);
     camera.far = maxSize * 20;
     camera.updateProjectionMatrix();
     controls.update();
   }
+
+  resizePreview2d();
+  draw2dPreview(geometry);
+}
+
+function draw2dPreview(geometry: THREE.BufferGeometry) {
+  if (!preview2dContext) return;
+
+  const rect = preview2dCanvas.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
+
+  const box = geometry.boundingBox;
+  if (!box) return;
+
+  resizePreview2d();
+
+  const ctx = preview2dContext;
+  const scaleX = preview2dCanvas.width / Math.max(0.001, box.max.x - box.min.x);
+  const scaleY = preview2dCanvas.height / Math.max(0.001, box.max.y - box.min.y);
+  const scale = Math.min(scaleX, scaleY) * 0.92;
+  const centerX = (box.min.x + box.max.x) / 2;
+  const centerY = (box.min.y + box.max.y) / 2;
+  const offsetX = preview2dCanvas.width / 2;
+  const offsetY = preview2dCanvas.height / 2;
+
+  const project = (x: number, y: number) => ({
+    x: (x - centerX) * scale + offsetX,
+    y: -(y - centerY) * scale + offsetY,
+  });
+
+  const drawPolygon = (points: Array<[number, number]>, fill: string, stroke?: string) => {
+    if (points.length === 0) return;
+    ctx.beginPath();
+    const [firstX, firstY] = points[0];
+    const first = project(firstX, firstY);
+    ctx.moveTo(first.x, first.y);
+    for (let i = 1; i < points.length; i += 1) {
+      const [pointX, pointY] = points[i];
+      const projected = project(pointX, pointY);
+      ctx.lineTo(projected.x, projected.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = Math.max(1, 1.25 * window.devicePixelRatio);
+      ctx.stroke();
+    }
+  };
+
+  ctx.clearRect(0, 0, preview2dCanvas.width, preview2dCanvas.height);
+  ctx.fillStyle = "#eef2f5";
+  ctx.fillRect(0, 0, preview2dCanvas.width, preview2dCanvas.height);
+
+  drawPolygon(
+    previewKeyOutlinePoints(),
+    "#b8c4cf",
+    "#2d3741",
+  );
+
+  drawPolygon(
+    previewKeyProfilePoints(currentParams.cutA, currentParams.cutB),
+    "#d98c2b",
+    "#2d3741",
+  );
+
+  if (currentParams.handleType === "keyless") {
+    drawPolygon(
+      previewKeylessBowPoints(),
+      "#d98c2b",
+      "#2d3741",
+    );
+  } else {
+    drawPolygon(
+      previewOctagonalBowPoints(),
+      "#d98c2b",
+      "#2d3741",
+    );
+  }
+
+  ctx.strokeStyle = "#2d3741";
+  ctx.lineWidth = Math.max(1, 1.25 * window.devicePixelRatio);
+  ctx.strokeRect(0.5, 0.5, preview2dCanvas.width - 1, preview2dCanvas.height - 1);
 }
 
 function readParams(): Hon66Params {
@@ -430,6 +528,12 @@ form.addEventListener("submit", (event) => event.preventDefault());
 stepButton.addEventListener("click", () => exportCurrent("step"));
 stlButton.addEventListener("click", () => exportCurrent("stl"));
 window.addEventListener("resize", resizeRenderer);
+window.addEventListener("resize", () => {
+  resizePreview2d();
+  if (currentGeometry) {
+    draw2dPreview(currentGeometry);
+  }
+});
 
 function animate() {
   controls.update();

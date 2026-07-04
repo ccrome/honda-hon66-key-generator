@@ -138,6 +138,29 @@ button:disabled {
   gap: 10px;
 }
 
+.preview-panel {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid #dce2e8;
+  padding-top: 16px;
+}
+
+.preview-label {
+  color: #52616f;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.preview-2d {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid #d1d8df;
+  border-radius: 6px;
+  background: #eef2f5;
+}
+
 .privacy-note {
   margin: 0;
   border-top: 1px solid #dce2e8;
@@ -162,6 +185,7 @@ button:disabled {
 }
 
 .viewer-panel {
+  width: 100%;
   min-width: 0;
   min-height: 100vh;
   background: #eef2f5;
@@ -182,11 +206,47 @@ canvas {
   }
 
   .controls {
+    gap: 12px;
+    padding: 18px;
+  }
+
+  header {
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .testimonial {
+    font-size: 12px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .repo-link {
+    font-size: 13px;
+  }
+
+  .actions {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-2d {
+    aspect-ratio: 4 / 3;
+  }
+
+  .controls {
     border-right: 0;
     border-bottom: 1px solid #d1d8df;
   }
 
   .viewer-panel {
-    min-height: 60vh;
+    display: none;
+  }
+
+  .viewer {
+    min-height: 0;
   }
 }
