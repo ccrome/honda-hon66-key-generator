@@ -248,8 +248,20 @@ function keyProfilePoints(cutA: Bitting, cutB: Bitting): Point2[] {
   ];
 }
 
+function samePoint(a: Point2, b: Point2) {
+  return Math.abs(a[0] - b[0]) < 1e-9 && Math.abs(a[1] - b[1]) < 1e-9;
+}
+
+function compactPolygonPoints(points: Point2[]): Point2[] {
+  const compacted = points.filter((point, index) => index === 0 || !samePoint(point, points[index - 1]));
+  if (compacted.length > 1 && samePoint(compacted[0], compacted[compacted.length - 1])) {
+    compacted.pop();
+  }
+  return compacted;
+}
+
 function polygonSketch(points: Point2[], plane: "XY" | "YZ" = "XY") {
-  const [first, ...rest] = points;
+  const [first, ...rest] = compactPolygonPoints(points);
   let sketch = new Sketcher(plane).movePointerTo(first);
   rest.forEach((point) => {
     sketch = sketch.lineTo(point);
