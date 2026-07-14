@@ -180,7 +180,7 @@ function rotateTestimonial() {
 
 async function loadTestimonials() {
   try {
-    const response = await fetch("/testimonials.yaml");
+    const response = await fetch(`${import.meta.env.BASE_URL}testimonials.yaml`);
     if (!response.ok) {
       throw new Error(`Failed to load testimonials: ${response.status}`);
     }
